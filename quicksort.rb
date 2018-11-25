@@ -7,24 +7,31 @@ class Array
     return self if hi <= lo
     prc ||= Proc.new { |a, b| a <=> b }
     shuffle! if lo == 0 && hi == length - 1
-    pivot_i = Array.partition!(self, lo, hi, &prc)
-    self.quicksort!(lo, pivot_i - 1, &prc)
-    self.quicksort!(pivot_i + 1, hi, &prc)
+    lt, gt = Array.partition!(self, lo, hi, &prc)
+    self.quicksort!(lo, lt - 1, &prc)
+    self.quicksort!(gt + 1, hi, &prc)
   end
 
   private
 
   def self.partition!(arr, lo = 0, hi = length - 1, &prc)
     prc ||= Proc.new { |a, b| a <=> b }
-    i = lo + 1
-    j = hi
-    loop do
-      i += 1 while prc.call(arr[i], arr[lo]) < 0 && i <= hi
-      j -= 1 while prc.call(arr[j], arr[lo]) >= 0 && j > lo
-      break if j < i
-      arr[i], arr[j] = arr[j], arr[i]
+    lt = lo
+    gt = hi
+    i = lo
+    until i > gt
+      case prc.call(arr[i], arr[lt]) <=> 0
+      when -1
+        arr[lt], arr[i] = arr[i], arr[lt]
+        lt += 1
+        i += 1
+      when 1
+        arr[i], arr[gt] = arr[gt], arr[i]
+        gt -= 1
+      when 0
+        i += 1
+      end
     end
-    arr[lo], arr[j] = arr[j], arr[lo]
-    j
+    [lt, gt]
   end
 end
